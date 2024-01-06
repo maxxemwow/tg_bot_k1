@@ -9,20 +9,16 @@ from aiogram.types import (CallbackQuery, InlineKeyboardButton,
 import os
 from keyboards.keyboard_menu import DefKey, GenKey, AgeKey
 from lexicon.lexicon_ru import welcome_text
-from models import methods as mt
-import aioredis
+#from models import methods as mt
 from dotenv import load_dotenv
-from aiogram.fsm.storage.redis import RedisStorage
 
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 
-bot: Bot = Bot(os.environ.get('API_TOKEN'))
-redis = aioredis.from_url(os.environ.get('REDISURL'))
-storage: RedisStorage = RedisStorage(redis=redis)
-dp: Dispatcher = Dispatcher(storage=storage)
+bot: Bot = Bot(os.environ.get('TOKEN'))
+dp: Dispatcher = Dispatcher()
 user_dict = {}
 
 
@@ -38,11 +34,8 @@ class Question(StatesGroup):
 
 @dp.message(Command(commands='start'), StateFilter(default_state))
 async def starting_comm(msg: Message, state: FSMContext):
-    if len(mt.get_data(msg.from_user.id)) == 0:
-        await msg.answer(text=welcome_text)
-        await state.set_state(Question.starting)
-    else:
-        await msg.answer('Вы уже прошли опрос, спасибо за ваши ответы!')
+    await msg.answer(text=welcome_text)
+    await state.set_state(Question.starting)
 
 
 @dp.message(Command(commands='cancel'), ~StateFilter(default_state))
@@ -125,11 +118,12 @@ async def process_age_sent(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer('Спасибо за прохождение опроса!')
     await callback.message.delete()
     user_dict[callback.from_user.id] = await state.get_data()
-    mt.insert_cus(callback.from_user.id, user_dict[callback.from_user.id]['gender'],
-                  user_dict[callback.from_user.id]['age'])
-    mt.insert_fp(callback.from_user.id, user_dict[callback.from_user.id]['is_alc'],
-                 user_dict[callback.from_user.id]['like_k'],
-                 user_dict[callback.from_user.id]['cook_k'], user_dict[callback.from_user.id]['know_rec'])
+    print(user_dict)
+    #mt.insert_cus(callback.from_user.id, user_dict[callback.from_user.id]['gender'],
+    #              user_dict[callback.from_user.id]['age'])
+    #mt.insert_fp(callback.from_user.id, user_dict[callback.from_user.id]['is_alc'],
+    #             user_dict[callback.from_user.id]['like_k'],
+    #            user_dict[callback.from_user.id]['cook_k'], user_dict[callback.from_user.id]['know_rec'])
     await state.clear()
 
 
