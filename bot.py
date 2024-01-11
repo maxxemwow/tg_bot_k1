@@ -7,9 +7,9 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import (CallbackQuery, InlineKeyboardButton,
                            InlineKeyboardMarkup, Message)
 import os
-from keyboards.keyboard_menu import DefKey, GenKey, AgeKey
-from lexicon.lexicon_ru import welcome_text
-#from models import methods as mt
+from keyboards.keyboard_menu import SetNumberKey, SizeKey, PayKey
+from lexicon.lexicon_ru import welcome_text, byby_text
+from models import methods as mt
 from dotenv import load_dotenv
 
 
@@ -24,12 +24,15 @@ user_dict = {}
 
 class Question(StatesGroup):
     starting = State()
-    is_alc = State()
-    like_k = State()
-    cook_k = State()
-    know_rec = State()
-    gender = State()
-    age = State()
+    set_nubmer = State()
+    size = State()
+    amount_set = State()
+    promocode = State()
+    deliv_adress = State()
+    delive_time = State()
+    contact_number = State()
+    pay_way = State()
+    comments = State()
 
 
 @dp.message(Command(commands='start'), StateFilter(default_state))
@@ -38,94 +41,88 @@ async def starting_comm(msg: Message, state: FSMContext):
     await state.set_state(Question.starting)
 
 
-@dp.message(Command(commands='cancel'), ~StateFilter(default_state))
-async def cancel_comm(msg: Message, state: FSMContext):
-    await msg.answer(text="Вы отменили прохождение опроса\n\n"
-                          "Чтобы вернуться, отправьте /start")
-    await state.clear()
-
-
-@dp.message(Command(commands='cancel'))
-async def cancel_comm(msg: Message):
-    await msg.answer(text="Вы уже отменили прохождение опроса ранее\n\n"
-                          "Чтобы вернуться, отправьте /start")
-
-
 @dp.message(Command(commands='poll'), StateFilter(Question.starting))
 async def polling_starting(msg: Message, state: FSMContext):
-    yes_button = InlineKeyboardButton(text='Да',
-                                      callback_data='1')
-    no_button = InlineKeyboardButton(text='Нет',
-                                     callback_data='no')
-    undefined_button = InlineKeyboardButton(text='Затрудняюсь ответить',
-                                            callback_data='0')
-    keyboard: list[list[InlineKeyboardButton]] = [[yes_button, no_button],
-                                                  [undefined_button]]
-    markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
-    await msg.answer(text='Употребляете ли вы алкоголь?', reply_markup=markup)
-    await state.set_state(Question.is_alc)
+    await msg.answer(text='Выберите, пожалуйста, номер комлекта', reply_markup=SetNumberKey.markup)
+    await state.set_state(Question.set_nubmer)
 
 
-@dp.callback_query(StateFilter(Question.is_alc), Text(text='no'))
-async def stop_polling(callback: CallbackQuery, state: FSMContext):
-    await callback.message.delete()
-    await callback.message.answer('Спасибо за прохождение опроса!')
-    await state.clear()
+@dp.message(Command(commands='poll'), StateFilter(default_state))
+async def polling_starting(msg: Message, state: FSMContext):
+    await msg.answer(text='Выберите, пожалуйста, номер комлекта', reply_markup=SetNumberKey.markup)
+    await state.set_state(Question.set_nubmer)
 
 
-@dp.callback_query(StateFilter(Question.is_alc), Text(text=['1', '0']))
+@dp.callback_query(StateFilter(Question.set_nubmer), Text(text=['1', '2', '3', '4', '5']))
 async def do_you_like(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(is_alc=callback.data)
-    await callback.message.edit_text(text='Нравятся ли вам алкогольные коктейли?',
-                                  reply_markup=DefKey.markup)
-    await state.set_state(Question.like_k)
+    await state.update_data(set_nubmer=callback.data)
+    await callback.message.edit_text(text='Теперь выберите нужный размер',
+                                  reply_markup=SizeKey.markup)
+    await state.set_state(Question.size)
 
 
-@dp.callback_query(StateFilter(Question.like_k), Text(text=[str(i) for i in range(5)]))
+@dp.callback_query(StateFilter(Question.size), Text(text=['S', 'M', 'L']))
 async def cooking_time(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(like_k=callback.data)
-    await callback.message.edit_text(text='Нравится ли вам готовить алкогольные коктейли?',
-                                     reply_markup=DefKey.markup)
-    await state.set_state(Question.cook_k)
+    await state.update_data(size=callback.data)
+    await callback.message.edit_text(text='Сколько данных комплектов вам нужно?',
+                                     reply_markup=SetNumberKey.markup)
+    await state.set_state(Question.amount_set)
 
 
-@dp.callback_query(StateFilter(Question.cook_k), Text(text=[str(i) for i in range(5)]))
+@dp.callback_query(StateFilter(Question.amount_set), Text(text=['1', '2', '3', '4', '5']))
 async def she_know(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(cook_k=callback.data)
-    await callback.message.edit_text(text='Хотели бы узнать больше рецептов '
-                                          'для вашего домашнего бара?',
-                                     reply_markup=DefKey.markup)
-    await state.set_state(Question.know_rec)
+    await state.update_data(amount_set=callback.data)
+    await callback.message.edit_text(text='Введите промокод при наличии или слово нет')
+    await state.set_state(Question.promocode)
 
 
-@dp.callback_query(StateFilter(Question.know_rec), Text(text=[str(i) for i in range(5)]))
-async def gender_reveal(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(know_rec=callback.data)
-    await callback.message.edit_text(text='Укажите ваш пол', reply_markup=GenKey.markup)
-    await state.set_state(Question.gender)
+@dp.message(StateFilter(Question.promocode))
+async def gender_reveal(msg: Message, state: FSMContext):
+    await state.update_data(promocode=msg.text)
+    await msg.answer(text='Введите адрес доставки')
+    await state.set_state(Question.deliv_adress)
 
 
-@dp.callback_query(StateFilter(Question.gender), Text(text=['м', 'ж']))
-async def age_rev(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(gender=callback.data)
-    await callback.message.edit_text(text='Введите ваш возраст', reply_markup=AgeKey.markup)
-    await state.set_state(Question.age)
+@dp.message(StateFilter(Question.deliv_adress))
+async def age_rev(msg: Message, state: FSMContext):
+    await state.update_data(deliv_adress=msg.text)
+    await msg.answer(text='Напишите желаемую дату и время доставки')
+    await state.set_state(Question.delive_time)
 
 
-@dp.callback_query(StateFilter(Question.age), Text(text=[str(i) for i in range(1, 5)]))
+@dp.message(StateFilter(Question.delive_time))
+async def age_rev(msg: Message, state: FSMContext):
+    await state.update_data(delive_time=msg.text)
+    await msg.answer(text='Укажите ваш контактный номер телефона')
+    await state.set_state(Question.contact_number)
+
+
+@dp.message(StateFilter(Question.contact_number))
+async def comment_from_user(msg: Message, state: FSMContext):
+    await state.update_data(contact_number = msg.text)
+    await msg.answer('Еcли у вас есть коомментарии к заказу, пожайлуйста, укажите их или напишите "нет"')
+    await state.set_state(Question.comments)
+
+
+@dp.message(StateFilter(Question.comments))
+async def age_rev(msg: Message, state: FSMContext):
+    await state.update_data(comments=msg.text)
+    await msg.answer(text='Выберите желаемый способ оплаты', reply_markup=PayKey.markup)
+    await state.set_state(Question.pay_way)
+
+
+@dp.callback_query(StateFilter(Question.pay_way), Text(text=['cash', 'card', 'transfer']))
 async def process_age_sent(callback: CallbackQuery, state: FSMContext):
-    await state.update_data(age=callback.data)
-    await callback.message.answer('Спасибо за прохождение опроса!')
+    await state.update_data(pay_way=callback.data)
+    await callback.message.answer(byby_text)
     await callback.message.delete()
     user_dict[callback.from_user.id] = await state.get_data()
     print(user_dict)
-    #mt.insert_cus(callback.from_user.id, user_dict[callback.from_user.id]['gender'],
-    #              user_dict[callback.from_user.id]['age'])
-    #mt.insert_fp(callback.from_user.id, user_dict[callback.from_user.id]['is_alc'],
-    #             user_dict[callback.from_user.id]['like_k'],
-    #            user_dict[callback.from_user.id]['cook_k'], user_dict[callback.from_user.id]['know_rec'])
+    await bot.send_message(chat_id='395890972', text=mt.send_result(user_dict, callback.from_user.id))
     await state.clear()
 
 
 if __name__ == '__main__':
+
+
     dp.run_polling(bot)

@@ -1,30 +1,38 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 
 
-class DefKey:
-    yes_abs = InlineKeyboardButton(text='Точно да', callback_data='1')
-    yes_noabs = InlineKeyboardButton(text='Скорее да', callback_data='2')
-    no_noabs = InlineKeyboardButton(text='Скорее нет', callback_data='3')
-    no_abs = InlineKeyboardButton(text='Точно нет', callback_data='4')
-    undefined_button = InlineKeyboardButton(text='Затрудняюсь ответить', callback_data='0')
-    keyboard: list[list[InlineKeyboardButton]] = [[yes_abs], [yes_noabs], [no_noabs], [no_abs], [undefined_button]]
-
+class SetNumberKey:
+    first_set = InlineKeyboardButton(text='1',
+                                      callback_data='1')
+    second_set = InlineKeyboardButton(text='2',
+                                     callback_data='2')
+    third_set = InlineKeyboardButton(text='3',
+                                            callback_data='3')
+    fourth_set = InlineKeyboardButton(text='4',
+                                            callback_data='4')
+    fifth_set = InlineKeyboardButton(text='5',
+                                            callback_data='5')
+    keyboard: list[list[InlineKeyboardButton]] = [[first_set, second_set, third_set],
+                                                  [fourth_set, fifth_set]]
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
-class GenKey:
-    male_button = InlineKeyboardButton(text='Мужской ♂', callback_data='м')
-    female_button = InlineKeyboardButton(text='Женский ♀', callback_data='ж')
-    keyboard: list[list[InlineKeyboardButton]] = [[male_button, female_button]]
+class SizeKey:
+    s_size = InlineKeyboardButton(text='S',
+                                      callback_data='S')
+    m_size = InlineKeyboardButton(text='M',
+                                     callback_data='M')
+    l_size = InlineKeyboardButton(text='L',
+                                            callback_data='L')
+    keyboard: list[list[InlineKeyboardButton]] = [[s_size, m_size, l_size]]
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
-class AgeKey:
-    young = InlineKeyboardButton(text='18-25', callback_data='1')
-    post_young = InlineKeyboardButton(text='25-35', callback_data='2')
-    adult = InlineKeyboardButton(text='35-50', callback_data='3')
-    old = InlineKeyboardButton(text='50+', callback_data='4')
-    keyboard = [[young, post_young, adult, old]]
+class PayKey:
+    cash = InlineKeyboardButton(text='Наличными', callback_data='cash')
+    card = InlineKeyboardButton(text='Картой', callback_data='card')
+    transfer = InlineKeyboardButton(text='Перевод', callback_data='transfer')
+    keyboard = [[cash], [card], [transfer]]
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
@@ -36,5 +44,4 @@ class AgeKey:
 #     b5 = KeyboardButton(text='Точно да', callback_data='0')
 #
 #     keyboard = ReplyKeyboardMarkup(keyboard=[[b1], [b2], [b3], [b4], [b5]], resize_keyboard=True)
-
 
