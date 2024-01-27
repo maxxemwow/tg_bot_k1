@@ -36,6 +36,23 @@ class PayKey:
     markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
+class ColorKey:
+    color1 = InlineKeyboardButton(text='Цвет1', callback_data='color1')
+    color2 = InlineKeyboardButton(text='Цвет2', callback_data='color2')
+    color3 = InlineKeyboardButton(text='Цвет3', callback_data='color3')
+    color4 = InlineKeyboardButton(text='Цвет4', callback_data='color4')
+    keyboard: list[list[InlineKeyboardButton]] = [[color1, color2],
+                                                  [color3, color4]]
+    markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+
+class BasketKey:
+    add_goods = InlineKeyboardButton(text='Добавить ещё товаров в корзину', callback_data='add')
+    final_basket = InlineKeyboardButton(text='Продолжить оформление заказа', callback_data='continue')
+    keyboard = [[add_goods], [final_basket]]
+    markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
+
+
 # class BasedKey:
 #     b1 = KeyboardButton(text='Точно да', callback_data='1')
 #     b2 = KeyboardButton(text='Скорее да', callback_data='2')
